@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flores Amarillas</title>
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================
+       VARIABLES Y PALETA DE COLORES (AMARILLO CÁLIDO / ORO / CREMA)
+       ========================================================== */
+    :root {
+      --color-gold-light: #fef08a;
+      --color-gold: #f59e0b;
+      --color-gold-dark: #b45309;
+      --color-accent: #fbbf24;
+      --bg-dark: #0f0d0b;
+      --glass-bg: rgba(28, 22, 16, 0.76);
+      --glass-border: rgba(245, 158, 11, 0.28);
+      --glass-glow: rgba(245, 158, 11, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #201a12 0%, #120f0d 50%, #080605 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      user-select: none;
+    }
+
+    /* Fondo resplandeciente ambiental */
+    .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+      z-index: 1;
+    }
+
+    /* Lienzo Canvas 60 FPS de fondo */
+    #anim-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    /* ==========================================================
+       ESTILO GLASSMORPHISM / NEUMORFISMO ELEGANTE
+       ========================================================== */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55),
+                  0 0 35px var(--glass-glow);
+      border-radius: 1.75rem;
+    }
+
+    .glass-panel-subtle {
+      background: rgba(35, 28, 20, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    /* ==========================================================
+       ANIMACIONES CSS (@keyframes)
+       ========================================================== */
+    @keyframes bouquetBloom {
+      0% {
+        transform: scale(0.1) translateY(70px) rotate(-6deg);
+        opacity: 0;
+        filter: blur(8px) brightness(0.6);
+      }
+      65% {
+        transform: scale(1.08) translateY(-10px) rotate(2deg);
+        opacity: 1;
+        filter: blur(0px) brightness(1.25);
+      }
+      85% {
+        transform: scale(0.97) translateY(4px) rotate(-1deg);
+      }
+      100% {
+        transform: scale(1) translateY(0) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1);
+      }
+    }
+
+    @keyframes bouquetFloat {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-16px) rotate(1.8deg);
+      }
+    }
+
+    @keyframes bouquetSway {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      25% {
+        transform: rotate(2deg);
+      }
+      75% {
+        transform: rotate(-2deg);
+      }
+    }
+
+    @keyframes fadeInUpSmooth {
+      0% {
+        opacity: 0;
+        transform: translateY(35px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes goldenGlowPulse {
+      0%, 100% {
+        filter: drop-shadow(0 15px 35px rgba(245, 158, 11, 0.4));
+      }
+      50% {
+        filter: drop-shadow(0 25px 55px rgba(253, 224, 71, 0.75));
+      }
+    }
+
+    @keyframes fadeStar {
+      0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.4) rotate(90deg);
+        opacity: 0.9;
+      }
+      100% {
+        transform: scale(0.3) rotate(180deg) translateY(-25px);
+        opacity: 0;
+      }
+    }
+
+    @keyframes rippleExpand {
+      0% {
+        transform: scale(0.2);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes bouquetFadeOut {
+      0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0px);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.85) translateY(-30px);
+        filter: blur(8px);
+      }
+    }
+
+    @keyframes letterUnfold {
+      0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.92) rotateX(10deg);
+        filter: blur(6px);
+      }
+      60% {
+        transform: translateY(-6px) scale(1.02) rotateX(-2deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0px);
+      }
+    }
+
+    /* Clases de animación */
+    .anim-bloom {
+      animation: bouquetBloom 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform-origin: bottom center;
+    }
+
+    .anim-fade-out {
+      animation: bouquetFadeOut 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .anim-letter-unfold {
+      animation: letterUnfold 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .anim-float {
+      animation: bouquetFloat 6s ease-in-out infinite;
+    }
+
+    .anim-sway {
+      animation: bouquetSway 7s ease-in-out infinite;
+    }
+
+    .anim-glow {
+      animation: goldenGlowPulse 4s ease-in-out infinite;
+    }
+
+    /* ==========================================================
+       PANTALLA DE LOGIN (PASO 1: DESVANECIMIENTO SUAVE)
+       ========================================================== */
+    #login-screen {
+      width: 100%;
+      max-width: 440px;
+      padding: 2.2rem;
+      text-align: center;
+      transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #login-screen.exiting {
+      opacity: 0;
+      transform: scale(0.9) translateY(-25px);
+      pointer-events: none;
+    }
+
+    .login-icon-box {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+    }
+
+    .login-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.35rem;
+    }
+
+    .login-subtitle {
+      font-size: 0.85rem;
+      color: rgba(254, 240, 138, 0.8);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gold-light);
+      margin-bottom: 0.4rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(254, 240, 138, 0.6);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem 1rem 0.85rem 2.6rem;
+      border-radius: 0.9rem;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
+    }
+
+    .btn-gold {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 0.9rem;
+      border: none;
+      background: linear-gradient(135deg, #fde047 0%, #f59e0b 50%, #d97706 100%);
+      color: #0f0d0b;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(245, 158, 11, 0.5);
+    }
+
+    .btn-gold:active {
+      transform: scale(0.98);
+    }
+
+    .error-box {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fecdd3;
+      padding: 0.65rem 0.85rem;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    /* Accesos rápidos */
+    .quick-users {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .quick-users-title {
+      font-size: 0.75rem;
+      color: rgba(254, 240, 138, 0.75);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .quick-chips {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    .chip-btn {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 0.85rem;
+      padding: 0.55rem 0.6rem;
+      color: #fef08a;
+      font-size: 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip-btn.highlight {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    .chip-btn:hover {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: var(--color-accent);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================
+       PANTALLA PRINCIPAL: RAMO PROTAGONISTA + DEDICATORIA
+       ========================================================== */
+    #main-screen {
+      width: 100%;
+      max-width: 820px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 94vh;
+      padding: 0.5rem;
+      position: relative;
+    }
+
+    /* Barra Superior */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      z-index: 30;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      background: rgba(35, 28, 20, 0.75);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fef08a;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      background: rgba(35, 28, 20, 0.75);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #fef08a;
+      width: 38px;
+      height: 38px;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--color-accent);
+      color: #ffffff;
+    }
+
+    .btn-logout {
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fecdd3;
+      padding: 0.45rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn-logout:hover {
+      background: rgba(244, 63, 94, 0.3);
+      border-color: rgba(244, 63, 94, 0.6);
+    }
+
+    /* ESCENARIO DEL RAMO (PASO 2: PROTAGONISTA VISUAL EN PRIMER PLANO) */
+    .bouquet-stage {
+      position: relative;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5rem auto;
+      cursor: pointer;
+    }
+
+    .bouquet-stage-glow {
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(253, 224, 71, 0.15) 50%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .bouquet-svg-wrap {
+      width: 280px;
+      height: 340px;
+      transition: transform 0.3s ease-out;
+    }
+
+    @media (min-width: 640px) {
+      .bouquet-svg-wrap {
+        width: 360px;
+        height: 430px;
+      }
+      .bouquet-stage-glow {
+        width: 440px;
+        height: 440px;
+      }
+    }
+
+    .bouquet-svg-wrap:hover {
+      transform: scale(1.04);
+    }
+
+    .bouquet-svg-wrap:active {
+      transform: scale(0.96);
+    }
+
+    .touch-hint {
+      margin-top: -0.5rem;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 9999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.72rem;
+      color: #fde047;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* TARJETA DE DEDICATORIA (PASO 3: RETRASO DE 1.8S) */
+    #dedication-card {
+      width: 100%;
+      max-width: 640px;
+      padding: 1.5rem 1.8rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(35px);
+      pointer-events: none;
+      transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-top: 0.75rem;
+      z-index: 20;
+    }
+
+    #dedication-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .dedication-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 9999px;
+      padding: 0.25rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fde047;
+      margin-bottom: 0.6rem;
+    }
+
+    .welcome-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 640px) {
+      .welcome-title {
+        font-size: 1.95rem;
+      }
+    }
+
+    .highlight-name {
+      background: linear-gradient(90deg, #fde047, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .quote-box {
+      font-size: 0.95rem;
+      font-style: italic;
+      color: rgba(254, 240, 138, 0.95);
+      line-height: 1.6;
+      margin: 0.6rem 0;
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.45);
+      border-radius: 1rem;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      white-space: pre-line;
+      text-align: left;
+    }
+
+    @media (min-width: 640px) {
+      .quote-box {
+        font-size: 1.1rem;
+        padding: 1rem 1.4rem;
+      }
+    }
+
+    .dedication-footer-note {
+      font-size: 0.75rem;
+      color: rgba(254, 240, 138, 0.75);
+      font-style: italic;
+    }
+
+    .btn-replay {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(253, 224, 71, 0.25));
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      border-radius: 9999px;
+      color: #fef08a;
+      padding: 0.55rem 1.35rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    .btn-replay:hover {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.5), rgba(253, 224, 71, 0.4));
+      border-color: #fde047;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    /* Barra inferior */
+    .bottom-bar {
+      margin-top: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 30;
+    }
+
+    .btn-anim-switch {
+      padding: 0.4rem 0.85rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: rgba(15, 23, 42, 0.55);
+      color: #fef08a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-anim-switch.active {
+      background: linear-gradient(135deg, #fde047, #f59e0b);
+      color: #0f0d0b;
+      border-color: #f59e0b;
+    }
+
+    /* Partículas de destello */
+    .sparkle-star {
+      position: fixed;
+      pointer-events: none;
+      z-index: 50;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: fadeStar 0.8s ease-out forwards;
+    }
+
+    .ripple-ring {
+      position: fixed;
+      pointer-events: none;
+      z-index: 45;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 2px solid rgba(253, 224, 71, 0.85);
+      animation: rippleExpand 0.7s ease-out forwards;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fondo con resplandor suave -->
+  <div class="ambient-glow"></div>
+
+  <!-- Canvas 60 FPS de animación de fondo (pétalos, flores flotantes, orbes) -->
+  <canvas id="anim-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- ==========================================================
+         PANTALLA DE LOGIN
+         ========================================================== -->
+    <div id="login-screen" class="glass-panel">
+      <div class="login-icon-box">💐</div>
+      <h1 class="login-title">Flores Amarillas</h1>
+      <p class="login-subtitle">Ingresa tus credenciales</p>
+
+      <div id="error-message" class="error-box"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="username-input">Usuario</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username-input" class="form-input" placeholder=" Tu nombre" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password-input">Contraseña</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password-input" class="form-input" placeholder="Tu contraseña" autocomplete="current-password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-gold" id="btn-submit">Ingresar</button>
+      </form>
+    </div>
+
+    <!-- ==========================================================
+         PANTALLA PRINCIPAL: RAMO PROTAGONISTA Y MENSAJE SECUENCIADO
+         ========================================================== -->
+    <div id="main-screen">
+      <!-- BARRA SUPERIOR -->
+      <div class="top-bar">
+        <div class="user-pill">
+          <span id="user-avatar-display">💐</span>
+          <span id="user-name-header">Leslie</span>
+        </div>
+        <div class="top-actions">
+          <button class="btn-icon" id="btn-sound" title="Activar/Silenciar sonido" onclick="toggleAudio()">🔔</button>
+          <button class="btn-logout" id="btn-logout" onclick="logout()">
+            <span>🚪</span>
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ESCENARIO DEL RAMO (PASO 2: APARECE PRIMERO EL RAMO EN PRIMER PLANO) -->
+      <div class="bouquet-stage" id="bouquet-stage" onclick="interactBouquet(event)">
+        <div class="bouquet-stage-glow" id="bouquet-glow"></div>
+        
+        <div class="bouquet-svg-wrap" id="bouquet-svg-container">
+          <!-- SVG VECTORIAL DE ALTA FIDELIDAD: RAMO DE FLORES AMARILLAS -->
+          <svg viewBox="0 0 520 620" style="width:100%; height:100%; overflow:visible;">
+            <defs>
+              <linearGradient id="gPetalA" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fffbeb" />
+                <stop offset="25%" stopColor="#fef08a" />
+                <stop offset="65%" stopColor="#fde047" />
+                <stop offset="90%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#d97706" />
+              </linearGradient>
+
+              <linearGradient id="gPetalB" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="35%" stopColor="#fde047" />
+                <stop offset="75%" stopColor="#fbbf24" />
+                <stop offset="100%" stopColor="#b45309" />
+              </linearGradient>
+
+              <radialGradient id="gCore" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#451a03" />
+                <stop offset="40%" stopColor="#78350f" />
+                <stop offset="75%" stopColor="#d97706" />
+                <stop offset="95%" stopColor="#fde047" />
+                <stop offset="100%" stopColor="#fef08a" />
+              </radialGradient>
+
+              <linearGradient id="gStem" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#14532d" />
+                <stop offset="50%" stopColor="#22c55e" />
+                <stop offset="100%" stopColor="#15803d" />
+              </linearGradient>
+
+              <linearGradient id="gRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fffbeb" />
+                <stop offset="25%" stopColor="#fef08a" />
+                <stop offset="60%" stopColor="#f59e0b" />
+                <stop offset="85%" stopColor="#b45309" />
+                <stop offset="100%" stopColor="#78350f" />
+              </linearGradient>
+
+              <filter id="svgGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- TALLOS Y LAZO DORADO -->
+            <g id="stems-group">
+              <path d="M 230 360 Q 210 460 190 545" stroke="url(#gStem)" stroke-width="11" stroke-linecap="round" fill="none" />
+              <path d="M 245 360 Q 240 460 230 555" stroke="url(#gStem)" stroke-width="12" stroke-linecap="round" fill="none" />
+              <path d="M 260 360 Q 260 460 260 560" stroke="url(#gStem)" stroke-width="12" stroke-linecap="round" fill="none" />
+              <path d="M 275 360 Q 280 460 290 555" stroke="url(#gStem)" stroke-width="11" stroke-linecap="round" fill="none" />
+              <path d="M 290 360 Q 315 460 330 545" stroke="url(#gStem)" stroke-width="11" stroke-linecap="round" fill="none" />
+
+              <!-- Hojas verdes -->
+              <path d="M 200 370 C 130 370 100 320 125 275 C 165 305 200 340 200 370 Z" fill="#15803d" opacity="0.95" />
+              <path d="M 320 370 C 390 370 420 320 395 275 C 355 305 320 340 320 370 Z" fill="#16a34a" opacity="0.95" />
+              <path d="M 260 340 C 260 260 325 215 345 205 C 335 255 295 310 260 340 Z" fill="#22c55e" opacity="0.9" />
+              <path d="M 260 340 C 260 260 195 215 175 205 C 185 255 225 310 260 340 Z" fill="#15803d" opacity="0.9" />
+
+              <!-- Lazo de satín dorado -->
+              <g transform="translate(260, 420)">
+                <path d="M -15 20 Q -45 80 -65 145 Q -40 125 -18 140 Q -5 70 -5 20 Z" fill="url(#gRibbon)" opacity="0.98" />
+                <path d="M 15 20 Q 45 80 65 145 Q 40 125 18 140 Q 5 70 5 20 Z" fill="url(#gRibbon)" opacity="0.98" />
+                <ellipse cx="-45" cy="0" rx="40" ry="24" transform="rotate(-20 -45 0)" fill="url(#gRibbon)" stroke="#fef08a" stroke-width="1.8" />
+                <ellipse cx="45" cy="0" rx="40" ry="24" transform="rotate(20 45 0)" fill="url(#gRibbon)" stroke="#fef08a" stroke-width="1.8" />
+                <circle cx="0" cy="0" r="18" fill="url(#gRibbon)" stroke="#fef08a" stroke-width="2.5" filter="url(#svgGlow)" />
+                <circle cx="0" cy="0" r="9" fill="#fef08a" />
+              </g>
+            </g>
+
+            <!-- FLORES AMARILLAS -->
+            <!-- Flor 1: Izquierda -->
+            <g transform="translate(180, 220)">
+              <!-- Pétalos en círculo -->
+              <g transform="rotate(0)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(30)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(60)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(90)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(120)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(150)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(180)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(210)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(240)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(270)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(300)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(330)"><path d="M 0 0 C -12 -25 -14 -65 0 -85 C 14 -65 12 -25 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <circle cx="0" cy="0" r="26" fill="url(#gCore)" stroke="#ca8a04" stroke-width="2" />
+              <circle cx="0" cy="0" r="13" fill="#fef08a" opacity="0.8" />
+            </g>
+
+            <!-- Flor 2: Derecha -->
+            <g transform="translate(340, 220)">
+              <g transform="rotate(0)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(25.7)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(51.4)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(77.1)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(102.8)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(128.5)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(154.2)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(180)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(205.7)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(231.4)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(257.1)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(282.8)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(308.5)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <g transform="rotate(334.2)"><path d="M 0 0 C -14 -20 -16 -60 0 -80 C 16 -60 14 -20 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1" /></g>
+              <circle cx="0" cy="0" r="25" fill="url(#gCore)" stroke="#d97706" stroke-width="2" />
+              <circle cx="0" cy="0" r="11" fill="#fef08a" opacity="0.8" />
+            </g>
+
+            <!-- Flor 3: Superior Izquierda -->
+            <g transform="translate(210, 130)">
+              <circle cx="0" cy="0" r="30" fill="none" />
+              <g transform="rotate(0)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(45)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(90)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(135)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(180)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(225)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(270)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(315)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1" /></g>
+              <circle cx="0" cy="0" r="19" fill="url(#gCore)" />
+            </g>
+
+            <!-- Flor 4: Superior Derecha -->
+            <g transform="translate(310, 130)">
+              <g transform="rotate(0)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(45)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(90)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(135)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(180)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(225)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(270)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <g transform="rotate(315)"><path d="M 0 0 C -12 -15 -12 -45 0 -60 C 12 -45 12 -15 0 0 Z" fill="url(#gPetalB)" stroke="#f59e0b" stroke-width="1" /></g>
+              <circle cx="0" cy="0" r="19" fill="url(#gCore)" />
+            </g>
+
+            <!-- Flor 5: FLOR MAJESTUOSA CENTRAL (Gran Rosa Imperial del Sol) -->
+            <g transform="translate(260, 240)">
+              <!-- Capa exterior (16 pétalos) -->
+              <g transform="rotate(0)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(22.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(45)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(67.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(90)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(112.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(135)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(157.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(180)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(202.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(225)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(247.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(270)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(292.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(315)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+              <g transform="rotate(337.5)"><path d="M 0 0 C -18 -35 -20 -95 0 -115 C 20 -95 18 -35 0 0 Z" fill="url(#gPetalA)" stroke="#f59e0b" stroke-width="1.3" /></g>
+
+              <!-- Capa intermedia (12 pétalos dorados) -->
+              <g transform="rotate(15)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(45)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(75)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(105)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(135)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(165)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(195)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(225)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(255)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(285)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(315)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+              <g transform="rotate(345)"><path d="M 0 0 C -14 -25 -16 -70 0 -88 C 16 -70 14 -25 0 0 Z" fill="url(#gPetalB)" stroke="#d97706" stroke-width="1.2" /></g>
+
+              <!-- Capa interior (8 pétalos) -->
+              <g transform="rotate(30)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(75)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(120)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(165)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(210)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(255)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(300)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+              <g transform="rotate(345)"><path d="M 0 0 C -10 -15 -12 -45 0 -58 C 12 -45 10 -15 0 0 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2" /></g>
+
+              <circle cx="0" cy="0" r="33" fill="url(#gCore)" stroke="#fef08a" stroke-width="3" filter="url(#svgGlow)" />
+              <circle cx="0" cy="0" r="16" fill="#fef08a" />
+            </g>
+
+            <!-- Destellos blancos / pequeñas flores -->
+            <circle cx="160" cy="160" r="7" fill="#ffffff" opacity="0.95" filter="url(#svgGlow)" />
+            <circle cx="360" cy="160" r="7" fill="#ffffff" opacity="0.95" filter="url(#svgGlow)" />
+            <circle cx="260" cy="90" r="8" fill="#fef08a" opacity="0.95" filter="url(#svgGlow)" />
+            <circle cx="130" cy="240" r="6" fill="#ffffff" opacity="0.9" />
+            <circle cx="390" cy="240" r="6" fill="#ffffff" opacity="0.9" />
+          </svg>
+        </div>
+
+        <div class="touch-hint">
+          <span>✨</span>
+          <span>Toca el ramo para iluminar</span>
+        </div>
+      </div>
+
+      <!-- TARJETA DE DEDICATORIA (PASO 3: APARECE ÚNICAMENTE TRAS CULMINAR LA FLORACIÓN DEL RAMO) -->
+      <div id="dedication-card" class="glass-panel">
+        <div class="dedication-badge">
+          <span>✨</span>
+          <span id="badge-title">Para Leslie con Todo mi Afecto</span>
+        </div>
+
+        <h2 class="welcome-title">
+          ¡Para ti, <span id="user-display-name" class="highlight-name">Leslie</span>!
+        </h2>
+
+        <div class="quote-box">
+          <span style="font-size: 1.5rem; color: #fbbf24; font-family: serif; vertical-align: top;">“</span>
+          <span id="user-message-text">...</span>
+          <span style="font-size: 1.5rem; color: #fbbf24; font-family: serif; vertical-align: bottom;">”</span>
+        </div>
+
+        <!-- Reproductor especial para Keisy: Youth (Lee Know) -->
+        <div id="keisy-player" style="display: none; margin: 1rem 0; padding: 0.85rem; border-radius: 1rem; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); text-align: left;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.25rem;">🎵</span>
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #fde047;">Youth (청춘) · Lee Know (Stray Kids)</div>
+                <div style="font-size: 0.7rem; color: rgba(253, 224, 71, 0.8);">Canción especial elegida para ti</div>
+              </div>
+            </div>
+            <a href="https://www.youtube.com/watch?v=NI2NBjZGYfM" target="_blank" rel="noopener noreferrer" style="font-size: 0.72rem; color: #fbbf24; text-decoration: underline;">YouTube ↗</a>
+          </div>
+          <div style="border-radius: 0.75rem; overflow: hidden; position: relative; padding-bottom: 56.25%; height: 0; background: #000;">
+            <iframe id="keisy-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" src="" title="Lee Know - Youth" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="dedication-footer-note">
+          — Dedicado con todo mi aprecio y los mejores deseos
+        </div>
+
+        <div>
+          <button type="button" class="btn-replay" onclick="runBouquetSequence()">
+            💐 Volver a ver el ramo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       JAVASCRIPT: LÓGICA DE USUARIOS, TIMELINE ESTRICTO Y CANVAS
+       ========================================================== -->
+  <script>
+    // 1. CONFIGURACIÓN DE USUARIOS
+    const USERS = [
+      {
+        username: 'leslie',
+        password: 'Lasflores123',
+        displayName: 'Leslie',
+        badge: '💐 Carta de Carlos',
+        customMessage: 'Quería darte esta florecita porque te quiero muchísimo y porque quería aprovechar el día para recordarte lo importante que es para mí tu amistad.\n\nSinceramente, haberte conocido ha sido de las mejores cosas que me han pasado. Me alegra mucho haber coincidido contigo y poder compartir momentos, conversaciones, risas y todas esas bobadas que terminan haciendo que una amistad sea especial.\n\nGracias por ser una buena amiga y por todos los momentos que hemos compartido. Espero que hoy tengas un día muy bonito, que sonrías mucho y que recibas todo el cariño que mereces.\n\nY bueno, aquí está tu flor amarilla. No te acostumbres tampoco, que después creen que soy detallista y me toca mantener la reputación JAJAJA.\n\nTe quiero muchísimo, Leslie. Espero que tengas un día increíble.',
+        avatar: '💐',
+        animMode: 'butterflies_stars_rain',
+        floatStyle: 'sway'
+      },
+      {
+        username: 'ashlie',
+        password: 'Lasflores123',
+        displayName: 'Ashlie',
+        badge: '✨ Carta de Carlos',
+        customMessage: 'Aunque no llevamos demasiado tiempo de conocernos, siento que conectamos bastante rápido y eso me parece muy chévere. Hay personas con las que cuesta un montón agarrar confianza y otras con las que simplemente todo fluye, y contigo siento que pasó eso.\n\nTodavía nos estamos conociendo y obviamente me faltan muchas cosas por descubrir de ti —tampoco voy a decir que ya sé toda tu historia porque ni que fuera investigador privado JAJAJA—, pero por lo que he conocido hasta ahora, me pareces una persona muy cool y alguien con quien vale la pena seguir compartiendo.\n\nTambién quiero que sepas que si algún día necesitas hablar, desahogarte o simplemente que alguien te escuche, puedes contar conmigo. Todos merecemos sentir que alguien nos escucha y nos comprende, y espero poder ser esa persona para ti cuando lo necesites.\n\nMe alegra mucho haberte conocido y espero que sigamos construyendo una bonita amistad.',
+        avatar: '✨',
+        animMode: 'celestial_flowers',
+        floatStyle: 'float'
+      },
+      {
+        username: 'ange',
+        password: 'Lasflores123',
+        displayName: 'Ange',
+        badge: '🦋 Carta de Carlos',
+        customMessage: 'Quería darte esta florecita porque, siendo sincero, te has ganado un lugar muy especial en mi vida desde que te conocí. Desde ese momento siento que muchas cosas se volvieron un poquito mejores, y no sé en qué momento terminaste ganándote tanto de mi cariño JAJAJA.\n\nTe quiero muchísimo y de verdad eres una persona demasiado especial para mí. Me gusta poder compartir contigo, hablar, reírnos de cualquier bobada y simplemente saber que estás ahí. Puede que no siempre sea el mejor demostrando lo que siento —mi talento para expresar sentimientos claramente está en desarrollo JAJAJA—, pero quiero que sepas que te aprecio muchísimo.\n\nGracias por llegar a mi vida y por ser tú. Espero que tengas un día muy bonito y que esta florecita te recuerde aunque sea un poquito lo mucho que te quiero.',
+        avatar: '🦋',
+        animMode: 'butterflies_stars',
+        floatStyle: 'sway'
+      },
+      {
+        username: 'keisy',
+        password: 'Lasflores123',
+        displayName: 'Keisy',
+        badge: '🌼 Carta de Carlos',
+        customMessage: 'Obviamente tú también tenías que recibir tu florecita, porque aunque a veces nos molestemos, discutamos por cualquier bobada o simplemente nos hagamos la vida imposible JAJAJA, te quiero muchísimo y eres una persona demasiado importante para mí.\n\nMás que mi hermana, muchas veces te siento como mi hermanita, y por eso siempre voy a querer verte bien, apoyarte y estar ahí cuando lo necesites. Hemos compartido muchísimos momentos y, aunque seguramente nunca te lo digo lo suficiente, valoro muchísimo tenerte en mi vida.\n\nGracias por estar ahí, por aguantarme, por las risas, por las conversaciones y hasta por esas pequeñas peleas que después terminan dando risa. Porque claramente una relación de hermanos sin molestarse no sería una relación de hermanos.\n\nPuede que no sea la persona más expresiva del mundo —creo que eso viene bloqueado de fábrica JAJAJA—, pero de verdad te quiero muchísimo y siempre voy a estar para ti.\n\nEspero que tengas un día muy bonito\n\nY recuerda: puedes crecer todo lo que quieras, pero de ahí no creces más JAJAJAJA',
+        avatar: '🌼',
+        animMode: 'flowers_butterflies',
+        floatStyle: 'float'
+      },
+      {
+        username: 'nata',
+        password: 'Lasflores123',
+        displayName: 'Nata',
+        badge: '🌻 Carta de Carlos',
+        customMessage: 'Aunque en realidad no llevamos tantísimo tiempo de conocernos, siento que en poco tiempo te has vuelto alguien bastante especial para mí. Es curioso cómo hay personas con las que uno no necesita años para empezar a tenerles cariño, y tú terminaste siendo una de esas personas.\n\nSé que tampoco hablamos todo el tiempo ni somos de estar hablando 24/7 —porque aparentemente tenemos vidas y cosas que hacer JAJAJA—, pero aun así te has ganado un lugar importante para mí. De cierta forma eres alguien que valoro y cuya presencia me alegra.\n\nQuería darte esta florecita simplemente para recordarte que te quiero mucho y que, aunque quizás no siempre lo demuestre o hablemos demasiado, eres importante para mí. Espero que tengas un día muy bonito y que sigamos conociéndonos y compartiendo más momentos.',
+        avatar: '🌻',
+        animMode: 'butterflies_stars_rain',
+        floatStyle: 'float'
+      },
+      {
+        username: 'naty',
+        password: 'Lasflores123',
+        displayName: 'Naty',
+        badge: '🌸 Carta de Carlos',
+        customMessage: 'Quería darte esta florecita para agradecerte por siempre estar ahí y por ser una persona con la que sé que puedo contar. Te quiero muchísimo y, aunque seas mi prima, para mí siempre has sido como una hermanita.\n\nHemos pasado por un montón de momentos juntos, hemos hablado, nos hemos reído y seguramente también hemos tenido nuestras pequeñas peleas por las bobadas más absurdas JAJAJA, porque obviamente ser familia también incluye molestarse mutuamente.\n\nGracias por estar presente y por todo el cariño que siempre me has dado. Puede que no te lo diga todos los días, pero de verdad valoro muchísimo tenerte en mi vida y espero que siempre podamos seguir contando el uno con el otro.',
+        avatar: '🌸',
+        animMode: 'butterflies_stars_flowers',
+        floatStyle: 'sway'
+      },
+      {
+        username: 'ronald',
+        password: 'Lasflores123',
+        displayName: 'Ronald',
+        badge: '🌟 Carta de Carlos',
+        customMessage: 'Ronald, las flores amarillas son símbolo de lealtad, éxito y energía positiva. Gracias por tu amistad firme y tu apoyo constante. Que la prosperidad y grandes victorias acompañen cada paso que des.',
+        avatar: '🌟',
+        animMode: 'flowers',
+        floatStyle: 'sway'
+      }
+    ];
+
+    let currentUser = null;
+    let soundEnabled = true;
+    let currentAnimMode = 'rain'; // 'rain' o 'flowers'
+    let dedicationTimeout = null;
+
+    // 2. SÍNTESIS DE AUDIO CON WEB AUDIO API
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playChime(pitchMultiplier = 1) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const freqs = [659.25, 830.61, 987.77, 1318.51];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq * pitchMultiplier, now + idx * 0.08);
+          gain.gain.setValueAtTime(0, now + idx * 0.08);
+          gain.gain.linearRampToValueAtTime(0.04, now + idx * 0.08 + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 1.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 1.3);
+        });
+      } catch (err) {}
+    }
+
+    function playSparkleSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400 + Math.random() * 600, now);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      btn.innerText = soundEnabled ? '🔔' : '🔕';
+      if (soundEnabled) playSparkleSound();
+    }
+
+    // 3. CANVAS 2D ANIMATION ENGINE (60 FPS)
+    const canvas = document.getElementById('anim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0;
+    let height = 0;
+    let particles = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createParticle() {
+      let type = 'petal';
+      if (currentAnimMode === 'flowers') {
+        type = Math.random() < 0.6 ? 'flower' : 'petal';
+      } else if (currentAnimMode === 'flowers_butterflies') {
+        type = Math.random() < 0.22 ? 'butterfly' : Math.random() < 0.40 ? 'firefly' : Math.random() < 0.60 ? 'star' : Math.random() < 0.85 ? 'flower' : 'petal';
+      } else if (currentAnimMode === 'butterflies_stars_rain') {
+        type = Math.random() < 0.25 ? 'butterfly' : Math.random() < 0.45 ? 'firefly' : Math.random() < 0.70 ? 'star' : 'petal';
+      } else if (currentAnimMode === 'butterflies_stars_flowers') {
+        type = Math.random() < 0.22 ? 'butterfly' : Math.random() < 0.40 ? 'firefly' : Math.random() < 0.60 ? 'star' : Math.random() < 0.85 ? 'flower' : 'petal';
+      } else if (currentAnimMode === 'rain_butterflies') {
+        type = Math.random() < 0.25 ? 'butterfly' : Math.random() < 0.45 ? 'firefly' : 'petal';
+      } else if (currentAnimMode === 'butterflies') {
+        type = Math.random() < 0.35 ? 'butterfly' : Math.random() < 0.65 ? 'firefly' : 'petal';
+      } else if (currentAnimMode === 'butterflies_stars') {
+        type = Math.random() < 0.30 ? 'butterfly' : Math.random() < 0.50 ? 'firefly' : Math.random() < 0.72 ? 'star' : 'petal';
+      } else if (currentAnimMode === 'celestial_flowers') {
+        type = Math.random() < 0.45 ? 'flower' : Math.random() < 0.75 ? 'petal' : 'star';
+      } else {
+        type = 'petal';
+      }
+
+      const isButterfly = type === 'butterfly';
+      const isFirefly = type === 'firefly';
+      const isStar = type === 'star';
+
+      return {
+        x: Math.random() * width,
+        y: isButterfly ? height + 20 : isFirefly ? Math.random() * height : -30 - Math.random() * 50,
+        size: isButterfly ? 14 + Math.random() * 8 : isFirefly ? 2 + Math.random() * 2.5 : isStar ? 5 + Math.random() * 7 : (currentAnimMode === 'rain' ? 8 + Math.random() * 12 : 14 + Math.random() * 16),
+        speedY: isButterfly ? -0.8 - Math.random() * 1.3 : isFirefly ? -0.2 - Math.random() * 0.4 : isStar ? 0.4 + Math.random() * 0.8 : 0.8 + Math.random() * 1.6,
+        speedX: -0.6 + Math.random() * 1.2,
+        rotation: Math.random() * 360,
+        rotationSpeed: isButterfly ? -0.8 + Math.random() * 1.6 : -1.2 + Math.random() * 2.4,
+        flip: Math.random() * Math.PI,
+        flipSpeed: isButterfly ? 0.15 + Math.random() * 0.1 : 0.02 + Math.random() * 0.04,
+        opacity: isButterfly ? 0.8 + Math.random() * 0.2 : isStar ? 0.7 + Math.random() * 0.3 : 0.4 + Math.random() * 0.5,
+        color: isStar
+          ? ['#ffffff', '#fef08a', '#7dd3fc', '#38bdf8', '#fde047'][Math.floor(Math.random() * 5)]
+          : ['#ffffff', '#fef08a', '#fde047', '#f59e0b', '#fbbf24'][Math.floor(Math.random() * 5)],
+        type
+      };
+    }
+
+    function initParticles() {
+      particles = [];
+      const count = window.innerWidth < 640 ? 30 : 55;
+      for (let i = 0; i < count; i++) {
+        const p = createParticle();
+        p.y = Math.random() * height;
+        particles.push(p);
+      }
+    }
+    initParticles();
+
+    function drawButterfly(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      const flap = Math.cos(p.flip);
+      ctx.globalAlpha = p.opacity;
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 10;
+
+      // Alas izquierda y derecha con aleteo suave
+      [-1, 1].forEach(dir => {
+        ctx.save();
+        ctx.scale(dir * flap, 1);
+        ctx.fillStyle = p.color;
+        // Ala superior
+        ctx.beginPath();
+        ctx.moveTo(1, -2);
+        ctx.bezierCurveTo(p.size * 0.6, -p.size * 1.1, p.size * 1.4, -p.size * 0.5, p.size * 1.2, 0);
+        ctx.bezierCurveTo(p.size * 0.9, p.size * 0.5, p.size * 0.4, p.size * 0.2, 1, 2);
+        ctx.fill();
+
+        // Ala inferior
+        ctx.beginPath();
+        ctx.moveTo(1, 2);
+        ctx.bezierCurveTo(p.size * 0.8, p.size * 0.3, p.size * 0.8, p.size * 0.8, p.size * 0.3, p.size * 1.1);
+        ctx.bezierCurveTo(p.size * 0.1, p.size * 1.1, 0, p.size * 0.6, 1, 4);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Cuerpo
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 1.8, p.size * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Antenas
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(-1, -p.size * 0.35);
+      ctx.lineTo(-p.size * 0.3, -p.size * 0.65);
+      ctx.moveTo(1, -p.size * 0.35);
+      ctx.lineTo(p.size * 0.3, -p.size * 0.65);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawFirefly(p) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.15, Math.sin(p.flip) * 0.8 + 0.2);
+      ctx.shadowColor = '#fde047';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStar(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      const twinkle = Math.sin(p.flip);
+      ctx.globalAlpha = Math.max(0.2, p.opacity * (0.6 + twinkle * 0.4));
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 10;
+
+      ctx.beginPath();
+      const rOuter = p.size;
+      const rInner = p.size * 0.25;
+      for (let i = 0; i < 8; i++) {
+        const rad = (i * Math.PI) / 4;
+        const r = i % 2 === 0 ? rOuter : rInner;
+        const px = Math.cos(rad) * r;
+        const py = Math.sin(rad) * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPetal(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.scale(1, Math.sin(p.flip));
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size);
+      ctx.bezierCurveTo(p.size * 0.7, -p.size * 0.5, p.size * 0.7, p.size * 0.5, 0, p.size);
+      ctx.bezierCurveTo(-p.size * 0.7, p.size * 0.5, -p.size * 0.7, -p.size * 0.5, 0, -p.size);
+      ctx.fill();
+
+      // Vena del pétalo
+      ctx.strokeStyle = '#ca8a04';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size * 0.7);
+      ctx.lineTo(0, p.size * 0.7);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawFullFlower(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.scale(1, Math.sin(p.flip));
+      ctx.globalAlpha = p.opacity;
+
+      const petalCount = 6;
+      for (let i = 0; i < petalCount; i++) {
+        ctx.save();
+        ctx.rotate((i * Math.PI * 2) / petalCount);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, -p.size * 0.6, p.size * 0.35, p.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Corazón
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      ctx.arc(0, 0, p.size * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    let mouse = { x: -1000, y: -1000 };
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+
+      if (Math.random() < 0.25) {
+        const star = document.createElement('div');
+        star.className = 'sparkle-star';
+        star.style.left = (e.clientX + (Math.random() * 14 - 7)) + 'px';
+        star.style.top = (e.clientY + (Math.random() * 14 - 7)) + 'px';
+        star.style.backgroundColor = ['#fef08a', '#fde047', '#ffffff', '#f59e0b'][Math.floor(Math.random() * 4)];
+        star.style.boxShadow = '0 0 8px #fde047';
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 700);
+      }
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+      }
+    });
+
+    let shootingStars = [];
+    let shootingStarTimer = 0;
+
+    function renderLoop() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Lluvia de estrellas fugaces y asteroides sin lag (Ashlie, Keisy, Nata, Naty, Leslie, Ange)
+      const hasShootingStars = ['celestial_flowers', 'flowers_butterflies', 'butterflies_stars_rain', 'butterflies_stars_flowers', 'butterflies_stars', 'butterflies'].includes(currentAnimMode);
+      if (hasShootingStars) {
+        shootingStarTimer++;
+        if (shootingStarTimer > 55 && shootingStars.length < 10) {
+          shootingStarTimer = 0;
+          shootingStars.push({
+            x: Math.random() * width * 0.8,
+            y: Math.random() * height * 0.35,
+            speed: 12 + Math.random() * 6,
+            angle: Math.PI / 4 + (Math.random() * 0.15 - 0.075),
+            alpha: 1.0,
+            len: 80 + Math.random() * 80,
+            color: Math.random() < 0.35 ? '#38bdf8' : '#fef08a'
+          });
+        }
+
+        for (let sIdx = shootingStars.length - 1; sIdx >= 0; sIdx--) {
+          const star = shootingStars[sIdx];
+          star.x += Math.cos(star.angle) * star.speed;
+          star.y += Math.sin(star.angle) * star.speed;
+          star.alpha -= 0.016;
+
+          if (star.alpha <= 0 || star.x > width + 50 || star.y > height + 50) {
+            shootingStars.splice(sIdx, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.strokeStyle = star.color;
+          ctx.shadowColor = star.color;
+          ctx.shadowBlur = 8;
+          ctx.lineWidth = 1.8;
+          ctx.globalAlpha = Math.max(0, star.alpha);
+          ctx.beginPath();
+          ctx.moveTo(star.x, star.y);
+          ctx.lineTo(star.x - Math.cos(star.angle) * star.len, star.y - Math.sin(star.angle) * star.len);
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y += p.speedY;
+        p.x += p.speedX + Math.sin(p.y * 0.01) * 0.4;
+        p.rotation += p.rotationSpeed;
+        p.flip += p.flipSpeed;
+
+        // Interacción física con el mouse
+        if (mouse.x > 0) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130 && dist > 0) {
+            const force = (1 - dist / 130) * 3.2;
+            p.x += (dx / dist) * force;
+            p.y += (dy / dist) * force;
+            p.rotationSpeed += 0.03;
+          }
+        }
+
+        if (p.type === 'butterfly') {
+          drawButterfly(p);
+        } else if (p.type === 'firefly') {
+          drawFirefly(p);
+        } else if (p.type === 'star') {
+          drawStar(p);
+        } else if (p.type === 'petal') {
+          drawPetal(p);
+        } else {
+          drawFullFlower(p);
+        }
+
+        if (p.type === 'butterfly') {
+          if (p.y < -40 || p.x < -40 || p.x > width + 40) {
+            particles[i] = createParticle();
+          }
+        } else if (p.type === 'firefly') {
+          if (p.y < -30) {
+            p.y = height + 20;
+            p.x = Math.random() * width;
+          }
+        } else if (p.type === 'star') {
+          if (p.y > height + 30 || p.x < -30 || p.x > width + 30) {
+            particles[i] = createParticle();
+          }
+        } else {
+          if (p.y > height + 40 || p.x < -40 || p.x > width + 40) {
+            particles[i] = createParticle();
+          }
+        }
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    function setAnimMode(mode) {
+      currentAnimMode = mode;
+      initParticles();
+    }
+
+    // 4. TIMELINE ESTRICTO TRAS EL LOGIN: SECUENCIA UNIVERSAL
+    const loginScreen = document.getElementById('login-screen');
+    const mainScreen = document.getElementById('main-screen');
+    const bouquetWrap = document.getElementById('bouquet-svg-container');
+    const dedicationCard = document.getElementById('dedication-card');
+    const errorBox = document.getElementById('error-message');
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const uVal = document.getElementById('username-input').value.trim().toLowerCase();
+      const pVal = document.getElementById('password-input').value.trim();
+
+      const found = USERS.find(u => 
+        u.username === uVal && u.password.toLowerCase() === pVal.toLowerCase()
+      );
+
+      if (found) {
+        errorBox.style.display = 'none';
+        startCelebrationTimeline(found);
+      } else {
+        errorBox.textContent = 'Usuario o contraseña incorrectos. Por favor, verifica tus datos.';
+        errorBox.style.display = 'block';
+      }
+    });
+
+    function startCelebrationTimeline(user) {
+      currentUser = user;
+
+      // PASO 1 (Transición): El formulario de login desaparece suavemente
+      loginScreen.classList.add('exiting');
+      playChime(user.username === 'leslie' ? 1.15 : user.username === 'nata' ? 1.2 : 1.0);
+
+      setTimeout(() => {
+        loginScreen.style.display = 'none';
+        loginScreen.classList.remove('exiting');
+
+        // Configuración de textos del usuario
+        document.getElementById('user-avatar-display').textContent = user.avatar;
+        document.getElementById('user-name-header').textContent = user.displayName;
+        document.getElementById('badge-title').textContent = 'Carta de Carlos';
+        document.getElementById('user-display-name').textContent = user.displayName;
+        document.getElementById('user-message-text').textContent = user.customMessage;
+
+        // Reproductor de música para Keisy (Youth - Lee Know)
+        const keisyPlayer = document.getElementById('keisy-player');
+        const keisyIframe = document.getElementById('keisy-iframe');
+        if (user.username.toLowerCase() === 'keisy') {
+          keisyPlayer.style.display = 'block';
+          keisyIframe.src = 'https://www.youtube-nocookie.com/embed/NI2NBjZGYfM?autoplay=1&playsinline=1';
+        } else {
+          keisyPlayer.style.display = 'none';
+          keisyIframe.src = '';
+        }
+
+        // Modo de animación según usuario (mantenido en toda la experiencia)
+        setAnimMode(user.animMode);
+
+        // Mostrar pantalla principal
+        mainScreen.style.display = 'flex';
+
+        // Iniciar secuencia universal: Ramo (Fase 1) -> Ocultar (Fase 2) -> Carta (Fase 3)
+        runBouquetSequence();
+      }, 450);
+    }
+
+    function runBouquetSequence() {
+      if (dedicationTimeout) clearTimeout(dedicationTimeout);
+
+      const bouquetStage = document.getElementById('bouquet-stage');
+
+      // FASE 1: El Ramo es el protagonista inicial (floreciendo en el centro)
+      dedicationCard.style.display = 'none';
+      dedicationCard.classList.remove('visible', 'anim-letter-unfold');
+
+      bouquetStage.style.display = 'flex';
+      bouquetWrap.classList.remove('anim-bloom', 'anim-float', 'anim-sway', 'anim-fade-out');
+      void bouquetWrap.offsetWidth; // Forzar reflujo
+      bouquetWrap.classList.add('anim-bloom');
+
+      // FASE 2: Concluida la floración del ramo (2.8s), se oculta/desvanece suavemente
+      dedicationTimeout = setTimeout(() => {
+        bouquetWrap.classList.add('anim-fade-out');
+
+        // FASE 3: Solo cuando el ramo se haya escondido por completo (+850ms), aparece la Carta
+        setTimeout(() => {
+          bouquetStage.style.display = 'none';
+          dedicationCard.style.display = 'block';
+          dedicationCard.classList.add('visible', 'anim-letter-unfold');
+          playSparkleSound();
+        }, 850);
+      }, 2800);
+    }
+
+    function logout() {
+      if (dedicationTimeout) clearTimeout(dedicationTimeout);
+      const keisyPlayer = document.getElementById('keisy-player');
+      const keisyIframe = document.getElementById('keisy-iframe');
+      if (keisyPlayer) keisyPlayer.style.display = 'none';
+      if (keisyIframe) keisyIframe.src = '';
+      mainScreen.style.display = 'none';
+      document.getElementById('bouquet-stage').style.display = 'flex';
+      dedicationCard.style.display = 'none';
+      dedicationCard.classList.remove('visible', 'anim-letter-unfold');
+      loginScreen.style.display = 'block';
+      playSparkleSound();
+    }
+
+    // 5. INTERACCIÓN TÁCTIL / CLIC EN EL RAMO
+    function interactBouquet(e) {
+      playSparkleSound();
+      playChime(1.2);
+
+      const clientX = e.clientX || window.innerWidth / 2;
+      const clientY = e.clientY || window.innerHeight / 2;
+
+      // Anillo de luz
+      const ring = document.createElement('div');
+      ring.className = 'ripple-ring';
+      ring.style.left = (clientX - 45) + 'px';
+      ring.style.top = (clientY - 45) + 'px';
+      document.body.appendChild(ring);
+      setTimeout(() => ring.remove(), 700);
+
+      // Destellos de estrellas
+      const colors = ['#fef08a', '#fde047', '#f59e0b', '#ffffff', '#38bdf8'];
+      for (let i = 0; i < 12; i++) {
+        const star = document.createElement('div');
+        star.className = 'sparkle-star';
+        star.style.left = (clientX + (-30 + Math.random() * 60)) + 'px';
+        star.style.top = (clientY + (-30 + Math.random() * 60)) + 'px';
+        star.style.backgroundColor = colors[i % colors.length];
+        star.style.boxShadow = '0 0 10px ' + colors[i % colors.length];
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 800);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "Remix Flores Amarillas - Experiencia Interactiva",
+  "description": "Aplicación web interactiva con dedicatorias especiales y 5 animaciones fluidas de flores amarillas (Ramo Dorado, Girasol SVG, Lluvia de Pétalos, Vórtice Galáctico y Destellos Mágicos) totalmente adaptable a móviles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

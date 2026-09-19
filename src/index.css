@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Keyframes para floración orgánica de pétalos */
+  @keyframes petalUnfold {
+    0% {
+      transform: scale(0.05) rotate(-15deg);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.08) rotate(2deg);
+      opacity: 0.95;
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  @keyframes stemSway {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(1.8deg);
+    }
+  }
+
+  @keyframes leafLeft {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(-3.5deg);
+    }
+  }
+
+  @keyframes leafRight {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(3.5deg);
+    }
+  }
+
+  @keyframes corePulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
+    }
+    50% {
+      transform: scale(1.03);
+      filter: drop-shadow(0 0 22px rgba(251, 191, 36, 0.7));
+    }
+  }
+
+  @keyframes floatPollen {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.8;
+    }
+    85% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-260px) translateX(25px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes spinSlow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes goldenGlow {
+    0%, 100% {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), 0 0 50px rgba(251, 191, 36, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.4), 0 0 70px rgba(251, 191, 36, 0.25);
+    }
+  }
+
+  @keyframes floatFirefly {
+    0% {
+      transform: translateY(0) translateX(0) scale(0.8);
+      opacity: 0.2;
+    }
+    30% {
+      transform: translateY(-15px) translateX(10px) scale(1.1);
+      opacity: 0.9;
+    }
+    70% {
+      transform: translateY(-35px) translateX(-8px) scale(0.9);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(-50px) translateX(5px) scale(0.8);
+      opacity: 0.2;
+    }
+  }
+
+  @keyframes fadeStar {
+    0% {
+      transform: scale(0) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.4) rotate(90deg);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(0.3) rotate(180deg) translateY(-20px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes bouquetBloom {
+    0% {
+      transform: scale(0.1) translateY(80px) rotate(-8deg);
+      opacity: 0;
+      filter: blur(8px) brightness(0.6);
+    }
+    65% {
+      transform: scale(1.08) translateY(-10px) rotate(2deg);
+      opacity: 1;
+      filter: blur(0px) brightness(1.25);
+    }
+    85% {
+      transform: scale(0.97) translateY(4px) rotate(-1deg);
+    }
+    100% {
+      transform: scale(1) translateY(0) rotate(0deg);
+      opacity: 1;
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes bouquetFloat {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-15px) rotate(1.8deg);
+    }
+  }
+
+  @keyframes bouquetGlowPulse {
+    0%, 100% {
+      filter: drop-shadow(0 15px 35px rgba(245, 158, 11, 0.4));
+    }
+    50% {
+      filter: drop-shadow(0 25px 55px rgba(253, 224, 71, 0.75));
+    }
+  }
+
+  @keyframes fadeInUpSmooth {
+    0% {
+      opacity: 0;
+      transform: translateY(35px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes bouquetFadeOut {
+    0% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0px);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.85) translateY(-25px);
+      filter: blur(8px);
+    }
+  }
+
+  @keyframes letterUnfold {
+    0% {
+      opacity: 0;
+      transform: translateY(40px) scale(0.93) rotateX(10deg);
+      filter: blur(6px);
+    }
+    60% {
+      transform: translateY(-6px) scale(1.02) rotateX(-2deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotateX(0deg);
+      filter: blur(0px);
+    }
+  }
+
+  .animate-bouquet-bloom {
+    animation: bouquetBloom 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform-origin: bottom center;
+  }
+
+  .animate-bouquet-fade-out {
+    animation: bouquetFadeOut 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: center center;
+  }
+
+  .animate-letter-unfold {
+    animation: letterUnfold 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top center;
+  }
+
+  .animate-bouquet-float {
+    animation: bouquetFloat 6s ease-in-out infinite;
+  }
+
+  .animate-bouquet-glow {
+    animation: bouquetGlowPulse 4s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up-smooth {
+    animation: fadeInUpSmooth 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-float-firefly {
+    animation: floatFirefly 5s ease-in-out infinite alternate;
+  }
+
+  .animate-fade-star {
+    animation: fadeStar 0.8s ease-out forwards;
+  }
+
+  .animate-stem-sway {
+    animation: stemSway 7s ease-in-out infinite;
+  }
+
+  .animate-leaf-left {
+    animation: leafLeft 5s ease-in-out infinite;
+  }
+
+  .animate-leaf-right {
+    animation: leafRight 5.5s ease-in-out infinite 0.5s;
+  }
+
+  .animate-core-pulse {
+    animation: corePulse 3.5s ease-in-out infinite;
+  }
+
+  .animate-float-pollen {
+    animation: floatPollen 8s linear infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spinSlow 32s linear infinite;
+  }
+
+  .golden-card-glow {
+    animation: goldenGlow 4s ease-in-out infinite;
+  }
+}
+
+/* Fondo decorativo con gradiente cálido profundo */
+.bg-warm-night {
+  background: radial-gradient(circle at 50% 20%, #1e1810 0%, #120f0d 50%, #080605 100%);
+}
+
+.glass-panel {
+  background: rgba(28, 22, 16, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  will-change: transform, opacity;
+}
+
+.glass-panel-subtle {
+  background: rgba(35, 28, 20, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  will-change: transform, opacity;
+}
+
+/* OPTIMIZACIÓN DE RENDIMIENTO PARA MÓVILES (Evita caídas de FPS) */
+@media (max-width: 640px) {
+  .glass-panel {
+    background: rgba(24, 18, 12, 0.94);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-panel-subtle {
+    background: rgba(30, 22, 15, 0.92);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+
+  /* Desactivar pulsación continua de sombras pesadas en celular */
+  .golden-card-glow {
+    animation: none !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(245, 158, 11, 0.25) !important;
+  }
+
+  /* Limitar filtros y transformaciones costosas */
+  .animate-bouquet-glow {
+    animation: none !important;
+    filter: drop-shadow(0 8px 18px rgba(245, 158, 11, 0.35)) !important;
+  }
+}
+
