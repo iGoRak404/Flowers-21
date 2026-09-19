@@ -75,6 +75,10 @@ function resolveAudioPath(filename: string): string {
 
 class MusicManager {
   private audio: HTMLAudioElement | null = null;
+  private loginAudio: HTMLAudioElement | null = null;
+  private isLoginActive = true;
+  private isLoginMusicPlaying = false;
+  private unlockGestureAttached = false;
   private currentSong: SongData | null = null;
   private isPlayingState = false;
   private isMutedState = false;
@@ -110,6 +114,72 @@ class MusicManager {
         }
       }
     });
+
+    // Iniciar música primaveral de login
+    this.startLoginMusic();
+  }
+
+  /**
+   * Música primaveral suave para la pantalla de login mientras caen los pétalos
+   * Volumen agradable y ambiental (0.35). Sin controles en pantalla.
+   * Soporta inicio automático y desbloqueo en móvil al primer toque.
+   */
+  public startLoginMusic() {
+    if (typeof window === 'undefined') return;
+    this.isLoginActive = true;
+
+    if (!this.loginAudio) {
+      this.loginAudio = new Audio();
+      this.loginAudio.preload = 'auto';
+      this.loginAudio.loop = true;
+      this.loginAudio.volume = 0.35; // Volumen primaveral suave y agradable
+    }
+
+    const expectedSrc = resolveAudioPath('spring_login.mp3');
+    if (!this.loginAudio.src || !this.loginAudio.src.includes('spring_login.mp3')) {
+      this.loginAudio.src = expectedSrc;
+    }
+
+    const playPromise = this.loginAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          this.isLoginMusicPlaying = true;
+        })
+        .catch(() => {
+          // Bloqueo de autoplay en móviles (iOS Safari / Android):
+          // Se activa automáticamente al primer toque en cualquier parte de la pantalla
+          if (!this.unlockGestureAttached) {
+            this.unlockGestureAttached = true;
+            const unlockHandler = () => {
+              if (this.loginAudio && this.isLoginActive) {
+                this.loginAudio.play().then(() => {
+                  this.isLoginMusicPlaying = true;
+                }).catch(() => {});
+              }
+              this.unlockGestureAttached = false;
+              window.removeEventListener('touchstart', unlockHandler);
+              window.removeEventListener('pointerdown', unlockHandler);
+              window.removeEventListener('click', unlockHandler);
+            };
+            window.addEventListener('touchstart', unlockHandler, { once: true, passive: true });
+            window.addEventListener('pointerdown', unlockHandler, { once: true, passive: true });
+            window.addEventListener('click', unlockHandler, { once: true, passive: true });
+          }
+        });
+    }
+  }
+
+  /**
+   * Detiene por completo la música del login al ingresar a la dedicatoria
+   */
+  public stopLoginMusic() {
+    this.isLoginActive = false;
+    if (this.loginAudio) {
+      this.loginAudio.pause();
+      this.loginAudio.currentTime = 0;
+    }
+    this.isLoginMusicPlaying = false;
   }
 
   public subscribe(callback: () => void): () => void {
@@ -134,6 +204,7 @@ class MusicManager {
    * sin reproducir sonido aún (se pausa al instante).
    */
   public prepareUserAudio(username: string) {
+    this.stopLoginMusic();
     if (!this.audio) return;
     const targetSong = getSongForUser(username);
     if (!targetSong) {

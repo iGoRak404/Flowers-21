@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserConfig, AnimationType } from './types';
 import { LoginCard } from './components/LoginCard';
 import { MainScreen } from './components/MainScreen';
@@ -24,8 +24,18 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState<boolean>(false);
 
+  // Control automático de música primaveral en login
+  useEffect(() => {
+    if (!currentUser) {
+      musicManager.startLoginMusic();
+    } else {
+      musicManager.stopLoginMusic();
+    }
+  }, [currentUser]);
+
   const handleLoginSuccess = (user: UserConfig) => {
     setIsTransitioning(true);
+    musicManager.stopLoginMusic();
     if (soundEnabled) {
       playFlowerChime(1);
     }
