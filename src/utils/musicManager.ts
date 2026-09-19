@@ -5,8 +5,9 @@
  *   2. Vane (anteriormente Naty) -> Could Have Been Me (Sing 2)
  *   3. Leslie -> Mockingbird (Eminem)
  *   4. Skarlet -> Lugar Seguro (Jay Wheeler)
- * - La música arranca automáticamente EXACTAMENTE al salir la carta de dedicatoria.
- * - Sin botones de pausar, pasar o selector de canciones.
+ * - Música primaveral suave en pantalla de login.
+ * - La música arranca automáticamente EXACTAMENTE al momento de salir la carta.
+ * - Sin botones de pausar, pasar ni controles innecesarios.
  */
 
 export interface SongData {
@@ -66,11 +67,30 @@ export function getSongForUser(username?: string): SongData | null {
   return ALL_SONGS.find((s) => s.id === songId) || null;
 }
 
-function resolveAudioPath(filename: string): string {
-  const meta = import.meta as unknown as { env?: { BASE_URL?: string } };
-  const base = (typeof meta !== 'undefined' && meta.env?.BASE_URL) || './';
-  const cleanBase = base.endsWith('/') ? base : `${base}/`;
-  return `${cleanBase}assets/audio/${filename}`;
+/**
+ * Resuelve la ruta absoluta exacta para que funcione tanto en desarrollo local,
+ * en subdirectorios de GitHub Pages (/repositorio/) y con o sin barra final en la URL.
+ */
+export function resolveAudioPath(filename: string): string {
+  if (typeof window === 'undefined') return `/assets/audio/${filename}`;
+
+  try {
+    const baseUri = document.baseURI || window.location.href;
+    const url = new URL(baseUri);
+    let path = url.pathname;
+
+    // Si la ruta termina en un archivo (como index.html), eliminarlo
+    if (/\.[a-zA-Z0-9]+$/.test(path)) {
+      path = path.substring(0, path.lastIndexOf('/') + 1);
+    }
+    if (!path.endsWith('/')) {
+      path += '/';
+    }
+
+    return `${url.origin}${path}assets/audio/${filename}`;
+  } catch {
+    return `./assets/audio/${filename}`;
+  }
 }
 
 class MusicManager {
@@ -78,7 +98,9 @@ class MusicManager {
   private loginAudio: HTMLAudioElement | null = null;
   private isLoginActive = true;
   private isLoginMusicPlaying = false;
+  private isPrepared = false;
   private unlockGestureAttached = false;
+  private unlockHandlerRef: (() => void) | null = null;
   private currentSong: SongData | null = null;
   private isPlayingState = false;
   private isMutedState = false;
@@ -107,22 +129,31 @@ class MusicManager {
     });
 
     this.audio.addEventListener('error', () => {
-      if (this.audio && this.currentSong && !this.audio.src.includes('/assets/audio/')) {
-        this.audio.src = `/assets/audio/${this.currentSong.filename}`;
-        if (this.isPlayingState) {
-          this.audio.play().catch(() => {});
+      // Reintento de ruta alternativa si falla la ruta base
+      if (this.audio && this.currentSong) {
+        const fallbacks = [
+          `/assets/audio/${this.currentSong.filename}`,
+          `./assets/audio/${this.currentSong.filename}`,
+          `assets/audio/${this.currentSong.filename}`,
+        ];
+        const nextFallback = fallbacks.find((fb) => !this.audio?.src.endsWith(fb));
+        if (nextFallback && this.audio) {
+          this.audio.src = nextFallback;
+          if (this.isPlayingState) {
+            this.audio.play().catch(() => {});
+          }
         }
       }
     });
 
-    // Iniciar música primaveral de login
+    // Iniciar de inmediato la música de login
     this.startLoginMusic();
   }
 
   /**
    * Música primaveral suave para la pantalla de login mientras caen los pétalos
    * Volumen agradable y ambiental (0.35). Sin controles en pantalla.
-   * Soporta inicio automático y desbloqueo en móvil al primer toque.
+   * Auto-desbloqueo en móviles en cualquier interacción del usuario.
    */
   public startLoginMusic() {
     if (typeof window === 'undefined') return;
@@ -132,14 +163,27 @@ class MusicManager {
       this.loginAudio = new Audio();
       this.loginAudio.preload = 'auto';
       this.loginAudio.loop = true;
-      this.loginAudio.volume = 0.35; // Volumen primaveral suave y agradable
+      this.loginAudio.volume = 0.35;
+
+      this.loginAudio.addEventListener('error', () => {
+        if (this.loginAudio && !this.loginAudio.src.endsWith('/spring_login.mp3')) {
+          this.loginAudio.src = `/assets/audio/spring_login.mp3`;
+          if (this.isLoginActive) {
+            this.loginAudio.play().catch(() => {});
+          }
+        }
+      });
     }
 
     const expectedSrc = resolveAudioPath('spring_login.mp3');
     if (!this.loginAudio.src || !this.loginAudio.src.includes('spring_login.mp3')) {
       this.loginAudio.src = expectedSrc;
+      this.loginAudio.load();
     }
 
+    this.loginAudio.volume = 0.35;
+
+    // Intentar reproducción automática directa
     const playPromise = this.loginAudio.play();
     if (playPromise !== undefined) {
       playPromise
@@ -147,27 +191,51 @@ class MusicManager {
           this.isLoginMusicPlaying = true;
         })
         .catch(() => {
-          // Bloqueo de autoplay en móviles (iOS Safari / Android):
-          // Se activa automáticamente al primer toque en cualquier parte de la pantalla
-          if (!this.unlockGestureAttached) {
-            this.unlockGestureAttached = true;
-            const unlockHandler = () => {
-              if (this.loginAudio && this.isLoginActive) {
-                this.loginAudio.play().then(() => {
-                  this.isLoginMusicPlaying = true;
-                }).catch(() => {});
-              }
-              this.unlockGestureAttached = false;
-              window.removeEventListener('touchstart', unlockHandler);
-              window.removeEventListener('pointerdown', unlockHandler);
-              window.removeEventListener('click', unlockHandler);
-            };
-            window.addEventListener('touchstart', unlockHandler, { once: true, passive: true });
-            window.addEventListener('pointerdown', unlockHandler, { once: true, passive: true });
-            window.addEventListener('click', unlockHandler, { once: true, passive: true });
-          }
+          // Bloqueo de política del navegador: esperar el primer toque/clic
+          this.attachLoginUnlockListeners();
         });
+    } else {
+      this.attachLoginUnlockListeners();
     }
+  }
+
+  private attachLoginUnlockListeners() {
+    if (this.unlockGestureAttached || typeof window === 'undefined') return;
+    this.unlockGestureAttached = true;
+
+    const unlockHandler = () => {
+      if (!this.isLoginActive || !this.loginAudio) {
+        this.cleanupLoginUnlockListeners();
+        return;
+      }
+
+      this.loginAudio.volume = 0.35;
+      const p = this.loginAudio.play();
+      if (p !== undefined) {
+        p.then(() => {
+          this.isLoginMusicPlaying = true;
+          this.cleanupLoginUnlockListeners();
+        }).catch(() => {
+          // Si el navegador requirió otro tipo de interacción, permanece escuchando
+        });
+      }
+    };
+
+    this.unlockHandlerRef = unlockHandler;
+    window.addEventListener('click', unlockHandler, { passive: true });
+    window.addEventListener('touchend', unlockHandler, { passive: true });
+    window.addEventListener('pointerup', unlockHandler, { passive: true });
+    window.addEventListener('keydown', unlockHandler, { passive: true });
+  }
+
+  private cleanupLoginUnlockListeners() {
+    if (!this.unlockGestureAttached || !this.unlockHandlerRef || typeof window === 'undefined') return;
+    this.unlockGestureAttached = false;
+    window.removeEventListener('click', this.unlockHandlerRef);
+    window.removeEventListener('touchend', this.unlockHandlerRef);
+    window.removeEventListener('pointerup', this.unlockHandlerRef);
+    window.removeEventListener('keydown', this.unlockHandlerRef);
+    this.unlockHandlerRef = null;
   }
 
   /**
@@ -175,9 +243,12 @@ class MusicManager {
    */
   public stopLoginMusic() {
     this.isLoginActive = false;
+    this.cleanupLoginUnlockListeners();
     if (this.loginAudio) {
-      this.loginAudio.pause();
-      this.loginAudio.currentTime = 0;
+      try {
+        this.loginAudio.pause();
+        this.loginAudio.currentTime = 0;
+      } catch {}
     }
     this.isLoginMusicPlaying = false;
   }
@@ -200,59 +271,60 @@ class MusicManager {
   }
 
   /**
-   * Prepara y desbloquea el permiso de audio en navegadores móviles durante el clic de inicio de sesión
-   * sin reproducir sonido aún (se pausa al instante).
+   * Se ejecuta durante el clic o toque en "Ingresar a mi dedicatoria".
+   * Inicia el audio del usuario en silencio (volumen 0) para activar el permiso
+   * permanente del navegador sin que suene nada durante la animación del ramo.
    */
   public prepareUserAudio(username: string) {
     this.stopLoginMusic();
     if (!this.audio) return;
     const targetSong = getSongForUser(username);
     if (!targetSong) {
-      this.stop();
+      this.stop(true);
       return;
     }
 
+    this.isPrepared = true;
     this.currentSong = targetSong;
     this.audio.src = resolveAudioPath(targetSong.filename);
     this.audio.load();
 
-    // Desbloqueo silencioso para iOS Safari / Android Chrome
+    // Silencioso (volumen 0) para obtener el token de usuario continuo en iOS/Android/Chrome
+    this.audio.volume = 0;
+    this.audio.muted = false;
+
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          // Se pausa de inmediato para que permanezca en silencio hasta que salga la carta
-          this.audio?.pause();
-          if (this.audio) {
-            this.audio.currentTime = 0;
-          }
-          this.isPlayingState = false;
-          this.notify();
-        })
-        .catch(() => {
-          // Si el navegador bloqueó el warmup, no hay problema, se intentará al salir la carta
-        });
+      playPromise.catch(() => {
+        // Si el navegador no lo activó de inmediato, se activará al salir la carta
+      });
     }
   }
 
   /**
-   * Inicia la reproducción automática al momento exacto en que la carta aparece
+   * Inicia la canción a todo volumen EXACTAMENTE cuando la carta se despliega
    */
   public playUserSong(username: string) {
     if (!this.audio) return;
     const targetSong = getSongForUser(username);
     if (!targetSong) {
-      this.stop();
+      this.stop(true);
       return;
     }
 
+    this.isPrepared = false;
     this.currentSong = targetSong;
     const expectedSrc = resolveAudioPath(targetSong.filename);
     if (!this.audio.src || !this.audio.src.includes(targetSong.filename)) {
       this.audio.src = expectedSrc;
+      this.audio.load();
     }
 
-    this.audio.currentTime = 0;
+    // Reiniciar al segundo 0 y subir el volumen a 1 (o 0 si el usuario lo silenció)
+    try {
+      this.audio.currentTime = 0;
+    } catch {}
+
     this.audio.muted = this.isMutedState;
     this.audio.volume = this.isMutedState ? 0 : 1;
 
@@ -264,29 +336,48 @@ class MusicManager {
           this.notify();
         })
         .catch(() => {
-          // Si el navegador bloqueó, se reintentará en el siguiente toque
-          const retryOnTouch = () => {
+          // Respaldo para navegadores estrictos: activar con el primer toque en cualquier lugar
+          const unlockOnAnyTouch = () => {
             if (this.audio && !this.isMutedState) {
+              this.audio.volume = 1;
               this.audio.play().then(() => {
                 this.isPlayingState = true;
                 this.notify();
               }).catch(() => {});
             }
-            window.removeEventListener('pointerdown', retryOnTouch);
-            window.removeEventListener('touchstart', retryOnTouch);
-            window.removeEventListener('click', retryOnTouch);
+            window.removeEventListener('click', unlockOnAnyTouch);
+            window.removeEventListener('touchend', unlockOnAnyTouch);
+            window.removeEventListener('pointerup', unlockOnAnyTouch);
           };
-          window.addEventListener('pointerdown', retryOnTouch, { once: true, passive: true });
-          window.addEventListener('touchstart', retryOnTouch, { once: true, passive: true });
-          window.addEventListener('click', retryOnTouch, { once: true, passive: true });
+          window.addEventListener('click', unlockOnAnyTouch, { once: true, passive: true });
+          window.addEventListener('touchend', unlockOnAnyTouch, { once: true, passive: true });
+          window.addEventListener('pointerup', unlockOnAnyTouch, { once: true, passive: true });
         });
+    } else {
+      this.isPlayingState = true;
+      this.notify();
     }
   }
 
-  public stop() {
+  /**
+   * Detiene el audio del usuario.
+   * @param force Si es true (ej: cerrar sesión), detiene y pausa por completo.
+   * Si es false y está en estado preparado (fase ramo), mantiene el warmup en volumen 0.
+   */
+  public stop(force = false) {
+    if (this.isPrepared && !force) {
+      if (this.audio) {
+        this.audio.volume = 0;
+      }
+      return;
+    }
+
+    this.isPrepared = false;
     if (this.audio) {
-      this.audio.pause();
-      this.audio.currentTime = 0;
+      try {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+      } catch {}
     }
     this.isPlayingState = false;
     this.notify();
@@ -318,3 +409,4 @@ class MusicManager {
 }
 
 export const musicManager = new MusicManager();
+

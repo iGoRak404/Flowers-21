@@ -46,8 +46,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 
   // Función universal para iniciar o reiniciar la secuencia
   const runSequence = () => {
-    // Detener música previa para que solo suene al salir la carta
-    musicManager.stop();
+    // Detener música previa para que solo suene al salir la carta (modo soft stop para preservar warmup)
+    musicManager.stop(false);
 
     // Limpiar temporizadores previos
     timeoutsRef.current.forEach(clearTimeout);
@@ -84,7 +84,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
     runSequence();
     return () => {
       timeoutsRef.current.forEach(clearTimeout);
-      musicManager.stop();
+      musicManager.stop(true);
     };
   }, [user.username]);
 
@@ -183,6 +183,11 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         {sequenceStage === 'letter' && (
           <div
             id="dedication-letter-card"
+            onClick={() => {
+              if (hasMusic && soundEnabled && !musicManager.isPlaying()) {
+                musicManager.playUserSong(user.username);
+              }
+            }}
             className="w-full max-w-2xl glass-panel golden-card-glow rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden border border-amber-400/35 text-center animate-letter-unfold will-change-transform"
           >
             {/* Adorno superior dorado de pergamino */}
