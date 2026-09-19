@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -26,14 +26,17 @@ jobs:
         with:
           node-version: 20
 
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
       - name: Instalar dependencias
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Compilar proyecto (Vite)
         run: npm run build
 
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v4
+      - name: Asegurar archivo .nojekyll en dist
+        run: touch ./dist/.nojekyll
 
       - name: Subir artefacto de producción
         uses: actions/upload-pages-artifact@v3
