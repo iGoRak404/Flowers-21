@@ -6,17 +6,21 @@
     <title>Flores Amarillas</title>
     <script>
       // Redirección SPA automática para GitHub Pages
-      const pathname = window.location.pathname;
-      const origin = window.location.origin;
-      const repo = pathname.split('/')[1] || '';
-      if (repo && !pathname.endsWith('/')) {
-        window.location.replace(`${origin}/${repo}/`);
+      var pathname = window.location.pathname;
+      var origin = window.location.origin;
+      var parts = pathname.split('/').filter(Boolean);
+      var repo = parts[0] || '';
+      
+      if (pathname.includes('/docs')) {
+        window.location.replace(origin + '/' + repo + '/docs/');
+      } else if (repo) {
+        window.location.replace(origin + '/' + repo + '/');
       } else {
         window.location.replace('./');
       }
     </script>
   </head>
   <body style="background: #020617; color: #fef08a; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
-    <p>Cargando dedicatoria de Flores Amarillas...</p>
+    <p>Cargando Flores Amarillas...</p>
   </body>
 </html>

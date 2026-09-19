@@ -11,6 +11,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      // Si GitHub Pages sirve este index.html sin compilar desde la raíz del repositorio,
+      // redirigir de inmediato a /docs/ donde está la aplicación compilada.
+      if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+        document.addEventListener('DOMContentLoaded', function() {
+          var uncompiledScript = document.querySelector('script[src*="main.tsx"]');
+          if (uncompiledScript) {
+            var p = window.location.pathname;
+            var cleanP = p.endsWith('/') ? p : p + '/';
+            window.location.replace(cleanP + 'docs/');
+          }
+        });
+        // Respaldo inmediato
+        var uncompiledScript = document.querySelector('script[src*="main.tsx"]');
+        if (uncompiledScript) {
+          var p = window.location.pathname;
+          var cleanP = p.endsWith('/') ? p : p + '/';
+          window.location.replace(cleanP + 'docs/');
+        }
+      }
+    </script>
   </head>
   <body class="font-['Poppins',sans-serif] bg-slate-950 text-slate-100 min-h-screen overflow-x-hidden selection:bg-amber-400 selection:text-slate-900">
     <div id="root"></div>

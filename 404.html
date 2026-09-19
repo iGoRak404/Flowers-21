@@ -11,12 +11,11 @@
       var parts = pathname.split('/').filter(Boolean);
       var repo = parts[0] || '';
       
-      if (pathname.includes('/docs')) {
+      // Si estamos en un repositorio de GitHub Pages
+      if (repo) {
         window.location.replace(origin + '/' + repo + '/docs/');
-      } else if (repo) {
-        window.location.replace(origin + '/' + repo + '/');
       } else {
-        window.location.replace('./');
+        window.location.replace('./docs/');
       }
     </script>
   </head>
