@@ -78,6 +78,12 @@ export const ALL_SONGS: SongData[] = [
     artist: 'Alejandra Guzmán',
     filename: 'dia_de_suerte_alejandra_guzman.mp3',
   },
+  {
+    id: '4life',
+    title: '4LIFE',
+    artist: 'Kris R',
+    filename: '4life_kris_r.mp3',
+  },
 ];
 
 // Perfiles con música asignada (individuales o con selector de pistas múltiples)
@@ -91,6 +97,7 @@ export const USER_SONG_MAP: Record<string, string[]> = {
   skarlet: ['lugar_seguro'],
   ange: ['dia_de_suerte'],
   nata: ['dia_de_suerte'],
+  ashlie: ['4life'],
 };
 
 export function userHasMusic(username?: string): boolean {
