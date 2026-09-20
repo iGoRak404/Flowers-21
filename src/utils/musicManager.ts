@@ -90,6 +90,7 @@ export const USER_SONG_MAP: Record<string, string[]> = {
   leslie: ['mockingbird'],
   skarlet: ['lugar_seguro'],
   ange: ['dia_de_suerte'],
+  nata: ['dia_de_suerte'],
 };
 
 export function userHasMusic(username?: string): boolean {

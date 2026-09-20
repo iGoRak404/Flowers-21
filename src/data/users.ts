@@ -51,7 +51,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Nata',
     customMessage: 'Aunque en realidad no llevamos tantísimo tiempo de conocernos, siento que en poco tiempo te has vuelto alguien bastante especial para mí. Es curioso cómo hay personas con las que uno no necesita años para empezar a tenerles cariño, y tú terminaste siendo una de esas personas.\n\nSé que tampoco hablamos todo el tiempo ni somos de estar hablando 24/7 —porque aparentemente tenemos vidas y cosas que hacer JAJAJA—, pero aun así te has ganado un lugar importante para mí. De cierta forma eres alguien que valoro y cuya presencia me alegra.\n\nQuería darte esta florecita simplemente para recordarte que te quiero mucho y que, aunque quizás no siempre lo demuestre o hablemos demasiado, eres importante para mí. Espero que tengas un día muy bonito y que sigamos conociéndonos y compartiendo más momentos.',
     animationType: 'floating_sparkles',
-    roleDescription: 'Efecto Nata: Ramo radiante de flores amarillas con Mariposas Doradas y Lluvia de Estrellas',
+    roleDescription: 'Efecto Nata: Flores con destellos mágicos y canción Día de Suerte (Alejandra Guzmán)',
     avatarSeed: '🌻'
   },
   {
