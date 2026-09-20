@@ -72,6 +72,12 @@ export const ALL_SONGS: SongData[] = [
     artist: 'Michael Jackson',
     filename: 'smooth_criminal_michael_jackson.mp3',
   },
+  {
+    id: 'dia_de_suerte',
+    title: 'Día de Suerte',
+    artist: 'Alejandra Guzmán',
+    filename: 'dia_de_suerte_alejandra_guzman.mp3',
+  },
 ];
 
 // Perfiles con música asignada (individuales o con selector de pistas múltiples)
@@ -83,6 +89,7 @@ export const USER_SONG_MAP: Record<string, string[]> = {
   naty: ['could_have_been_me', 'what_makes_you_beautiful'],
   leslie: ['mockingbird'],
   skarlet: ['lugar_seguro'],
+  ange: ['dia_de_suerte'],
 };
 
 export function userHasMusic(username?: string): boolean {

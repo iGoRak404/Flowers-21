@@ -33,7 +33,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Ange',
     customMessage: 'Quería darte esta florecita porque, siendo sincero, te has ganado un lugar muy especial en mi vida desde que te conocí. Desde ese momento siento que muchas cosas se volvieron un poquito mejores, y no sé en qué momento terminaste ganándote tanto de mi cariño JAJAJA.\n\nTe quiero muchísimo y de verdad eres una persona demasiado especial para mí. Me gusta poder compartir contigo, hablar, reírnos de cualquier bobada y simplemente saber que estás ahí. Puede que no siempre sea el mejor demostrando lo que siento —mi talento para expresar sentimientos claramente está en desarrollo JAJAJA—, pero quiero que sepas que te aprecio muchísimo.\n\nGracias por llegar a mi vida y por ser tú. Espero que tengas un día muy bonito y que esta florecita te recuerde aunque sea un poquito lo mucho que te quiero.',
     animationType: 'golden_butterflies',
-    roleDescription: 'Animación Ange: Mariposas Doradas Luminosas, Lluvia de Asteroides y Luciérnagas',
+    roleDescription: 'Animación Ange: Mariposas Doradas Luminosas, Lluvia de Asteroides y canción Día de Suerte (Alejandra Guzmán)',
     avatarSeed: '🦋'
   },
   {
