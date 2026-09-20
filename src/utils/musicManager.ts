@@ -31,6 +31,12 @@ export const ALL_SONGS: SongData[] = [
     filename: 'could_have_been_me_sing2.mp3',
   },
   {
+    id: 'what_makes_you_beautiful',
+    title: 'What Makes You Beautiful',
+    artist: 'One Direction',
+    filename: 'what_makes_you_beautiful_one_direction.mp3',
+  },
+  {
     id: 'mockingbird',
     title: 'Mockingbird',
     artist: 'Eminem',
@@ -42,29 +48,67 @@ export const ALL_SONGS: SongData[] = [
     artist: 'Lee Know · Stray Kids',
     filename: 'youth_stray_kids.mp3',
   },
+  {
+    id: 'back_door',
+    title: 'Back Door',
+    artist: 'Stray Kids',
+    filename: 'back_door_stray_kids.mp3',
+  },
+  {
+    id: 'those_eyes',
+    title: 'Those Eyes',
+    artist: 'New West',
+    filename: 'those_eyes_new_west.mp3',
+  },
+  {
+    id: 'sin_drama',
+    title: 'Sin Drama',
+    artist: 'Trueno',
+    filename: 'sin_drama_trueno.mp3',
+  },
+  {
+    id: 'smooth_criminal',
+    title: 'Smooth Criminal',
+    artist: 'Michael Jackson',
+    filename: 'smooth_criminal_michael_jackson.mp3',
+  },
 ];
 
-// Únicas personas con canción asignada: Keisy, Vane (antes Naty), Leslie y Skarlet
-export const USER_SONG_MAP: Record<string, string> = {
-  keisy: 'youth',
-  vane: 'could_have_been_me',
-  naty: 'could_have_been_me',
-  leslie: 'mockingbird',
-  skarlet: 'lugar_seguro',
+// Perfiles con música asignada (individuales o con selector de pistas múltiples)
+export const USER_SONG_MAP: Record<string, string[]> = {
+  julieth: ['smooth_criminal'],
+  siel: ['those_eyes', 'sin_drama'],
+  keisy: ['youth', 'back_door'],
+  vane: ['could_have_been_me', 'what_makes_you_beautiful'],
+  naty: ['could_have_been_me', 'what_makes_you_beautiful'],
+  leslie: ['mockingbird'],
+  skarlet: ['lugar_seguro'],
 };
 
 export function userHasMusic(username?: string): boolean {
   if (!username) return false;
   const clean = username.toLowerCase().trim();
-  return Boolean(USER_SONG_MAP[clean]);
+  const list = USER_SONG_MAP[clean];
+  return Boolean(list && list.length > 0);
 }
 
-export function getSongForUser(username?: string): SongData | null {
-  if (!username) return null;
+export function getUserSongs(username?: string): SongData[] {
+  if (!username) return [];
   const clean = username.toLowerCase().trim();
-  const songId = USER_SONG_MAP[clean];
-  if (!songId) return null;
-  return ALL_SONGS.find((s) => s.id === songId) || null;
+  const songIds = USER_SONG_MAP[clean] || [];
+  return songIds
+    .map((id) => ALL_SONGS.find((s) => s.id === id))
+    .filter((s): s is SongData => Boolean(s));
+}
+
+export function getSongForUser(username?: string, songId?: string): SongData | null {
+  if (!username) return null;
+  const songs = getUserSongs(username);
+  if (songs.length === 0) return null;
+  if (songId) {
+    return songs.find((s) => s.id === songId) || songs[0];
+  }
+  return songs[0];
 }
 
 /**
@@ -303,10 +347,11 @@ class MusicManager {
 
   /**
    * Inicia la canción a todo volumen EXACTAMENTE cuando la carta se despliega
+   * Si se especifica songId, reproduce esa canción; de lo contrario la canción principal.
    */
-  public playUserSong(username: string) {
+  public playUserSong(username: string, songId?: string) {
     if (!this.audio) return;
-    const targetSong = getSongForUser(username);
+    const targetSong = getSongForUser(username, songId);
     if (!targetSong) {
       this.stop(true);
       return;
@@ -352,6 +397,51 @@ class MusicManager {
           window.addEventListener('click', unlockOnAnyTouch, { once: true, passive: true });
           window.addEventListener('touchend', unlockOnAnyTouch, { once: true, passive: true });
           window.addEventListener('pointerup', unlockOnAnyTouch, { once: true, passive: true });
+        });
+    } else {
+      this.isPlayingState = true;
+      this.notify();
+    }
+  }
+
+  /**
+   * Cambia de pista de audio de forma inmediata.
+   * La nueva canción comienza SIEMPRE desde el segundo 0 (desde el principio)
+   * y se reproduce automáticamente sin pausar ni requerir intervención.
+   */
+  public switchTrack(username: string, songId: string) {
+    if (!this.audio) return;
+    const targetSong = ALL_SONGS.find((s) => s.id === songId);
+    if (!targetSong) return;
+
+    this.isPrepared = false;
+    this.currentSong = targetSong;
+    const expectedSrc = resolveAudioPath(targetSong.filename);
+
+    try {
+      this.audio.pause();
+    } catch {}
+
+    this.audio.src = expectedSrc;
+    this.audio.load();
+
+    try {
+      this.audio.currentTime = 0;
+    } catch {}
+
+    this.audio.muted = this.isMutedState;
+    this.audio.volume = this.isMutedState ? 0 : 1;
+
+    const playPromise = this.audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          this.isPlayingState = true;
+          this.notify();
+        })
+        .catch(() => {
+          this.isPlayingState = false;
+          this.notify();
         });
     } else {
       this.isPlayingState = true;

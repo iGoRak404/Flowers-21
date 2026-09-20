@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LogOut, Sparkles, Volume2, VolumeX, Flower2, Mail, RotateCcw, Music } from 'lucide-react';
+import { LogOut, Sparkles, Volume2, VolumeX, Flower2, Mail, RotateCcw, Music, Disc3 } from 'lucide-react';
 import { UserConfig, AnimationType } from '../types';
 import { playFlowerChime, playGentleSparkle } from '../utils/audio';
-import { musicManager, userHasMusic, getSongForUser } from '../utils/musicManager';
+import { musicManager, userHasMusic, getUserSongs, SongData } from '../utils/musicManager';
 import { HeroBouquet } from './HeroBouquet';
 
 interface MainScreenProps {
@@ -36,13 +36,30 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   const nextParticleId = useRef(0);
   const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  const userSong = getSongForUser(user.username);
+  const userTracks = getUserSongs(user.username);
   const hasMusic = userHasMusic(user.username);
+  const [selectedSongId, setSelectedSongId] = useState<string>(() => userTracks[0]?.id || '');
+
+  useEffect(() => {
+    const tracks = getUserSongs(user.username);
+    setSelectedSongId(tracks[0]?.id || '');
+  }, [user.username]);
+
+  const currentSongData = userTracks.find((t) => t.id === selectedSongId) || userTracks[0] || null;
 
   // Sincronización continua con el interruptor general de sonido
   useEffect(() => {
     musicManager.setMuted(!soundEnabled);
   }, [soundEnabled]);
+
+  // Manejo de cambio de pista: empieza inmediatamente desde el inicio (segundo 0) sin play ni pause
+  const handleSelectTrack = (trackId: string) => {
+    setSelectedSongId(trackId);
+    if (soundEnabled) {
+      playGentleSparkle();
+    }
+    musicManager.switchTrack(user.username, trackId);
+  };
 
   // Función universal para iniciar o reiniciar la secuencia
   const runSequence = () => {
@@ -72,7 +89,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 
         // La canción empieza automáticamente EXACTAMENTE al momento de salir la carta
         if (hasMusic && soundEnabled) {
-          musicManager.playUserSong(user.username);
+          const targetTrack = selectedSongId || userTracks[0]?.id;
+          musicManager.playUserSong(user.username, targetTrack);
         }
       }, 850);
       timeoutsRef.current.push(t2);
@@ -185,7 +203,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             id="dedication-letter-card"
             onClick={() => {
               if (hasMusic && soundEnabled && !musicManager.isPlaying()) {
-                musicManager.playUserSong(user.username);
+                const targetTrack = selectedSongId || userTracks[0]?.id;
+                musicManager.playUserSong(user.username, targetTrack);
               }
             }}
             className="w-full max-w-2xl glass-panel golden-card-glow rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden border border-amber-400/35 text-center animate-letter-unfold will-change-transform"
@@ -226,36 +245,79 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             </div>
 
             {/* BANNER DE MÚSICA CON EL DISEÑO EXACTO SOLICITADO */}
-            {hasMusic && userSong && (
-              <div
-                id="current-music-banner"
-                className="my-4 w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-[#231507]/85 border border-[#b48324]/75 shadow-lg shadow-amber-950/40 flex items-center justify-between gap-3 text-left pointer-events-none select-none backdrop-blur-sm"
-              >
-                {/* Lado Izquierdo: Icono + Título + Píldora de Artista */}
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-wrap sm:flex-nowrap">
-                  {/* Caja cuadrada con esquinas redondeadas para el icono de música */}
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#3c250c] border border-[#7a4c13] flex items-center justify-center shrink-0 shadow-inner">
-                    <Music className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+            {hasMusic && currentSongData && (
+              <div className="my-4 w-full flex flex-col gap-2.5">
+                <div
+                  id="current-music-banner"
+                  className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-[#231507]/90 border border-[#b48324]/75 shadow-lg shadow-amber-950/40 flex items-center justify-between gap-3 text-left pointer-events-none select-none backdrop-blur-sm"
+                >
+                  {/* Lado Izquierdo: Icono + Título + Píldora de Artista */}
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-wrap sm:flex-nowrap">
+                    {/* Caja cuadrada con esquinas redondeadas para el icono de música */}
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#3c250c] border border-[#7a4c13] flex items-center justify-center shrink-0 shadow-inner">
+                      <Music className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                    </div>
+
+                    {/* Nombre de la canción en negrita */}
+                    <span className="font-bold text-[#fef3c7] text-sm sm:text-base tracking-tight truncate">
+                      {currentSongData.title}
+                    </span>
+
+                    {/* Píldora del Artista */}
+                    <span className="px-2.5 py-0.5 rounded-full border border-[#966318] bg-[#3a250f]/80 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-400 shrink-0">
+                      {currentSongData.artist}
+                    </span>
                   </div>
 
-                  {/* Nombre de la canción en negrita */}
-                  <span className="font-bold text-[#fef3c7] text-sm sm:text-base tracking-tight truncate">
-                    {userSong.title}
-                  </span>
-
-                  {/* Píldora del Artista */}
-                  <span className="px-2.5 py-0.5 rounded-full border border-[#966318] bg-[#3a250f]/80 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-400 shrink-0">
-                    {userSong.artist}
-                  </span>
+                  {/* Lado Derecho: Ecualizador animado en dorado */}
+                  <div className="flex items-end gap-1 h-4 pr-1 shrink-0" aria-hidden="true">
+                    <span className="w-1 bg-amber-400/80 rounded-full h-1.5 animate-[pulse_0.9s_ease-in-out_infinite]" />
+                    <span className="w-1 bg-amber-400 rounded-full h-3.5 animate-[pulse_0.6s_ease-in-out_infinite_0.15s]" />
+                    <span className="w-1 bg-amber-400 rounded-full h-2.5 animate-[pulse_0.75s_ease-in-out_infinite_0.35s]" />
+                    <span className="w-1 bg-amber-400/80 rounded-full h-1 animate-[pulse_0.55s_ease-in-out_infinite_0.1s]" />
+                  </div>
                 </div>
 
-                {/* Lado Derecho: Ecualizador animado en dorado */}
-                <div className="flex items-end gap-1 h-4 pr-1 shrink-0" aria-hidden="true">
-                  <span className="w-1 bg-amber-400/80 rounded-full h-1.5 animate-[pulse_0.9s_ease-in-out_infinite]" />
-                  <span className="w-1 bg-amber-400 rounded-full h-3.5 animate-[pulse_0.6s_ease-in-out_infinite_0.15s]" />
-                  <span className="w-1 bg-amber-400 rounded-full h-2.5 animate-[pulse_0.75s_ease-in-out_infinite_0.35s]" />
-                  <span className="w-1 bg-amber-400/80 rounded-full h-1 animate-[pulse_0.55s_ease-in-out_infinite_0.1s]" />
-                </div>
+                {/* Selector de pistas abajo cuando el perfil tiene 2 canciones (Siel, Keisy, Vane) */}
+                {userTracks.length > 1 && (
+                  <div
+                    id="track-selector-container"
+                    className="w-full flex flex-wrap items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-[#1b1208]/90 border border-[#b48324]/50 shadow-md backdrop-blur-sm"
+                  >
+                    <span className="text-[11px] sm:text-xs text-amber-300/80 font-medium flex items-center gap-1.5 mr-1">
+                      <Disc3 className="w-3.5 h-3.5 text-amber-400 animate-[spin_4s_linear_infinite]" />
+                      <span>Elegir pista:</span>
+                    </span>
+                    {userTracks.map((track) => {
+                      const isCurrent = currentSongData.id === track.id;
+                      return (
+                        <button
+                          key={track.id}
+                          type="button"
+                          id={`track-select-btn-${track.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectTrack(track.id);
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer ${
+                            isCurrent
+                              ? 'bg-gradient-to-r from-amber-500/35 via-yellow-400/25 to-amber-500/35 text-amber-200 border border-amber-400/80 shadow-amber-950/60 ring-1 ring-amber-400/50'
+                              : 'bg-slate-900/80 hover:bg-amber-500/20 text-amber-300/75 hover:text-amber-100 border border-amber-400/30'
+                          }`}
+                          title={`Reproducir ${track.title} de ${track.artist} desde el inicio`}
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              isCurrent ? 'bg-amber-400 animate-pulse ring-2 ring-amber-400/40' : 'bg-amber-400/30'
+                            }`}
+                          />
+                          <span className="tracking-wide">{track.title}</span>
+                          <span className="text-[10px] opacity-75 font-normal">({track.artist})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

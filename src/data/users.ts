@@ -42,7 +42,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Keisy',
     customMessage: 'Obviamente tú también tenías que recibir tu florecita, porque aunque a veces nos molestemos, discutamos por cualquier bobada o simplemente nos hagamos la vida imposible JAJAJA, te quiero muchísimo y eres una persona demasiado importante para mí.\n\nComo mi hermana, siempre quiero ver que estés bien, apoyarte y estar ahí cuando lo necesites. Hemos compartido muchísimos momentos y, aunque seguramente nunca te lo digo lo suficiente, valoro muchísimo tenerte en mi vida.\n\nGracias por estar ahí, por aguantarme, por las risas, por las conversaciones y hasta por esas pequeñas peleas que después terminan dando risa. Porque claramente una relación de hermanos sin molestarse no sería una relación de hermanos.\n\nPuede que no sea la persona más expresiva del mundo —creo que eso viene bloqueado de fábrica JAJAJA—, pero de verdad te quiero muchísimo y siempre voy a estar para ti.\n\nEspero que tengas un día muy bonito\n\nY recuerda: puedes crecer todo lo que quieras, pero de ahí no creces más JAJAJAJA',
     animationType: 'spiral_vortex',
-    roleDescription: 'Animación: Vórtice Galáctico, Mariposas Doradas y Lluvia de Estrellas con canción Youth',
+    roleDescription: 'Animación Keisy: Vórtice Galáctico, Mariposas Doradas y canciones Youth y Back Door (Stray Kids)',
     avatarSeed: '🌼'
   },
   {
@@ -60,7 +60,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Vane',
     customMessage: 'Quería darte esta florecita para agradecerte por siempre estar ahí y por ser una persona con la que sé que puedo contar. Te quiero muchísimo y, aunque seas mi prima, para mí siempre has sido como una hermanita.\n\nHemos pasado por un montón de momentos juntos, hemos hablado, nos hemos reído y seguramente también hemos tenido nuestras pequeñas peleas por las bobadas más absurdas JAJAJA, porque obviamente ser familia también incluye molestarse mutuamente.\n\nGracias por estar presente y por todo el cariño que siempre me has dado. Puede que no te lo diga todos los días, pero de verdad valoro muchísimo tenerte en mi vida y espero que siempre podamos seguir contando el uno con el otro.',
     animationType: 'petals_rain',
-    roleDescription: 'Efecto Vane: Lluvia primaveral de pétalos con canción Could Have Been Me (Sing 2)',
+    roleDescription: 'Efecto Vane: Lluvia primaveral de pétalos con canciones Could Have Been Me (Sing 2) y What Makes You Beautiful (One Direction)',
     avatarSeed: '🌸'
   },
   {
@@ -69,7 +69,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Siel',
     customMessage: 'Quería darte esta florecita amarilla para alegrarte el día y recordarte lo mucho que valoro tenerte presente. A veces el día a día se llena de carreras y prisas, pero siempre es bueno detenerse un segundo para agradecer a las personas que con su energía, su risa o sus ocurrencias hacen todo más agradable y bonito.\n\nGracias por tu buena vibra, por ser una persona auténtica y por compartir momentos tan bacanos. Espero de corazón que hoy recibas toneladas de sonrisas, que te consientan un montón y que este detalle te saque una buena sonrisa.\n\n¡Feliz día de las flores amarillas, Siel! Que nunca te falten motivos para brillar.',
     animationType: 'aurora_flowers',
-    roleDescription: 'Animación Siel: Aurora Floral Dorada, Bruma de Luz y Dientes de León Flotantes',
+    roleDescription: 'Animación Siel: Aurora Floral Dorada con canciones Those Eyes (New West) y Sin Drama (Trueno)',
     avatarSeed: '🌟'
   },
   {
@@ -78,7 +78,7 @@ export const USERS_CONFIG: UserConfig[] = [
     displayName: 'Julieth',
     customMessage: 'Quería darte esta florecita amarilla para recordarte cuánto te quiero. A veces entre la rutina y el corre corre de los días no se dice tan seguido, pero de verdad valoro un montón que seas mi prima y tenerte en la familia.\n\nSiempre es chévere compartir contigo, hablar de lo que sea, reírnos y saber que siempre podemos contar el uno con el otro como la familia que somos. Gracias por tu cariño, por tu buena vibra y por estar siempre presente.\n\nEspero que hoy tengas un día muy bonito, que te consientan bastante y que este pequeño detalle te saque una buena sonrisa. ¡Te quiero muchísimo, primita! Feliz día de las flores amarillas.',
     animationType: 'crystal_petals',
-    roleDescription: 'Animación Julieth: Cristales Florales Dorados, Mandalas Luminosos y Destellos',
+    roleDescription: 'Animación Julieth: Cristales Florales Dorados y canción Smooth Criminal (Michael Jackson)',
     avatarSeed: '💐'
   },
   {
